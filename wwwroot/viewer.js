@@ -36,3 +36,4 @@ export function loadModel(viewer, urn) {
         Autodesk.Viewing.Document.load('urn:' + urn, onDocumentLoadSuccess, onDocumentLoadFailure);
     });
 }
+
