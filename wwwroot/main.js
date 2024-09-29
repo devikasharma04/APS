@@ -1,77 +1,54 @@
 import { initViewer, loadModel } from './viewer.js';
+
+// Initialize viewer and load model immediately on page load
 initViewer(document.getElementById('preview')).then(viewer => {
-    const urn = window.location.hash?.substring(1);
-    setupModelSelection(viewer, urn);
-    setupModelUpload(viewer);
+    const urn = window.location.hash?.substring(1);  // Fetch the model URN from the URL hash if present
+    setupModelSelection(viewer, urn);  // Populate model dropdown and load selected model
 });
+
+// Function to populate the dropdown with available models and load the selected one
 async function setupModelSelection(viewer, selectedUrn) {
     const dropdown = document.getElementById('models');
-    dropdown.innerHTML = '';
+    dropdown.innerHTML = '';  // Clear existing dropdown options
+
     try {
-        const resp = await fetch('/api/models');
+        const resp = await fetch('/api/models');  // Fetch the list of models from the server
         if (!resp.ok) {
             throw new Error(await resp.text());
         }
-        const models = await resp.json();
-        dropdown.innerHTML = models.map(model => `<option value=${model.urn} ${model.urn === selectedUrn ? 'selected' : ''}>${model.name}</option>`).join('\n');
-        dropdown.onchange = () => onModelSelected(viewer, dropdown.value);
+        const models = await resp.json();  // Parse the JSON response
+        dropdown.innerHTML = models.map(model => 
+            `<option value="${model.urn}" ${model.urn === selectedUrn ? 'selected' : ''}>${model.name}</option>`
+        ).join('\n');
+
+        dropdown.onchange = () => onModelSelected(viewer, dropdown.value);  // Change model on selection
         if (dropdown.value) {
-            onModelSelected(viewer, dropdown.value);
+            onModelSelected(viewer, dropdown.value);  // Load the default selected model on page load
         }
     } catch (err) {
         alert('Could not list models. See the console for more details.');
         console.error(err);
     }
 }
-async function setupModelUpload(viewer) {
-    const upload = document.getElementById('upload');
-    const input = document.getElementById('input');
-    const models = document.getElementById('models');
-    upload.onclick = () => input.click();
-    input.onchange = async () => {
-        const file = input.files[0];
-        let data = new FormData();
-        data.append('model-file', file);
-        if (file.name.endsWith('.zip')) { // When uploading a zip file, ask for the main design file in the archive
-            const entrypoint = window.prompt('Please enter the filename of the main design inside the archive.');
-            data.append('model-zip-entrypoint', entrypoint);
-        }
-        upload.setAttribute('disabled', 'true');
-        models.setAttribute('disabled', 'true');
-        showNotification(`Uploading model <em>${file.name}</em>. Do not reload the page.`);
-        try {
-            const resp = await fetch('/api/models', { method: 'POST', body: data });
-            if (!resp.ok) {
-                throw new Error(await resp.text());
-            }
-            const model = await resp.json();
-            setupModelSelection(viewer, model.urn);
-        } catch (err) {
-            alert(`Could not upload model ${file.name}. See the console for more details.`);
-            console.error(err);
-        } finally {
-            clearNotification();
-            upload.removeAttribute('disabled');
-            models.removeAttribute('disabled');
-            input.value = '';
-        }
-    };
-}
+
+// Function to load the selected model
 async function onModelSelected(viewer, urn) {
     if (window.onModelSelectedTimeout) {
         clearTimeout(window.onModelSelectedTimeout);
         delete window.onModelSelectedTimeout;
     }
-    window.location.hash = urn;
+    window.location.hash = urn;  // Update the URL with the model URN
+
     try {
         const resp = await fetch(`/api/models/${urn}/status`);
         if (!resp.ok) {
             throw new Error(await resp.text());
         }
         const status = await resp.json();
+
         switch (status.status) {
             case 'n/a':
-                showNotification(`Model has not been translated.`);
+                showNotification('Model has not been translated.');
                 break;
             case 'inprogress':
                 showNotification(`Model is being translated (${status.progress})...`);
@@ -82,19 +59,22 @@ async function onModelSelected(viewer, urn) {
                 break;
             default:
                 clearNotification();
-                loadModel(viewer, urn);
-                break; 
+                loadModel(viewer, urn);  // Load the model if it's ready
+                break;
         }
     } catch (err) {
         alert('Could not load model. See the console for more details.');
         console.error(err);
     }
 }
+
+// Notification functions for model loading feedback
 function showNotification(message) {
     const overlay = document.getElementById('overlay');
     overlay.innerHTML = `<div class="notification">${message}</div>`;
     overlay.style.display = 'flex';
 }
+
 function clearNotification() {
     const overlay = document.getElementById('overlay');
     overlay.innerHTML = '';
