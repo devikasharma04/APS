@@ -18,9 +18,11 @@ body, html {
     align-items: center;
 }
 
-#preview, #overlay {
-    top: 3em;
-    bottom: 0;
+#preview {
+    top: 3em; /* Align below the header */
+    bottom: 0; /* Extend to the bottom */
+    width: 100%; /* Full width */
+    height: calc(100vh - 3em); /* Full height minus header height */
 }
 
 #overlay {
@@ -47,9 +49,4 @@ body, html {
 #header .title {
     flex: 1 0 auto;
     height: auto;
-}
-
-#models {
-    flex: 0 1 auto;
-    min-width: 2em;
 }
