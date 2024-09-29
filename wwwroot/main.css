@@ -4,12 +4,10 @@ body, html {
     height: 100vh;
     font-family: ArtifaktElement;
 }
-
 #header, #preview, #overlay {
     position: absolute;
     width: 100%;
 }
-
 #header {
     height: 3em;
     display: flex;
@@ -17,36 +15,33 @@ body, html {
     justify-content: space-between;
     align-items: center;
 }
-
-#preview {
-    top: 3em; /* Align below the header */
-    bottom: 0; /* Extend to the bottom */
-    width: 100%; /* Full width */
-    height: calc(100vh - 3em); /* Full height minus header height */
+#preview, #overlay {
+    top: 3em;
+    bottom: 0;
 }
-
 #overlay {
     z-index: 1;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 1em;
     display: none;
 }
-
 #overlay > .notification {
     margin: auto;
     padding: 1em;
     max-width: 50%;
     background: white;
 }
-
 #header > * {
     height: 2em;
     margin: 0 0.5em;
     font-size: 1em;
     font-family: ArtifaktElement;
 }
-
 #header .title {
     flex: 1 0 auto;
     height: auto;
+}
+#models {
+    flex: 0 1 auto;
+    min-width: 2em;
 }
